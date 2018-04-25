@@ -1,0 +1,93 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.1.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.6'
+    }
+}
+plugins {
+    id 'net.ltgt.apt' version '0.15'
+}
+
+apply plugin: 'java'
+apply plugin: 'net.ltgt.apt-idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+group = 'com.mshatunov.pool.api'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/milestone" }
+}
+
+
+ext {
+    springCloudVersion = 'Finchley.RC1'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.boot:spring-boot-starter-data-mongodb')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.cloud:spring-cloud-starter-config')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+
+    runtime('org.springframework.boot:spring-boot-devtools')
+
+    compileOnly 'org.mapstruct:mapstruct-jdk8:1.2.0.Final'
+    compileOnly 'org.projectlombok:lombok'
+
+    annotationProcessor('org.mapstruct:mapstruct-processor:1.2.0.Final')
+    annotationProcessor('org.projectlombok:lombok')
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+import com.bmuschko.gradle.docker.DockerRegistryCredentials
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
+task dockerfile(type: Dockerfile) {
+    from 'frolvlad/alpine-oraclejdk8:slim'
+    addFile "${bootJar.archiveName}", '.'
+    entryPoint 'java', '-jar', "${bootJar.archiveName}"
+}
+
+task copyJar(type: Copy, dependsOn: bootJar) {
+    from bootJar.archivePath
+    into dockerfile.destFile.parentFile
+}
+
+task buildImage(type: DockerBuildImage, dependsOn: [build, dockerfile, copyJar, check]) {
+    inputDir dockerfile.destFile.parentFile
+    tag = 'mshatunov/pool-api-customer:latest'
+}
+
+task pushImage(type: DockerPushImage, dependsOn: buildImage) {
+    imageName = buildImage.tag
+    def dockerRegistryCredentials = new DockerRegistryCredentials()
+    dockerRegistryCredentials.username = project.hasProperty('dockerUser') ? dockerUser : System.getenv('dockerUser')
+    dockerRegistryCredentials.password = project.hasProperty('dockerPassword') ? dockerPassword : System.getenv('dockerPassword')
+    registryCredentials = dockerRegistryCredentials
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.7'
+}
