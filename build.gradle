@@ -30,7 +30,6 @@ repositories {
     maven { url "https://repo.spring.io/milestone" }
 }
 
-
 ext {
     springCloudVersion = 'Finchley.RC1'
 }
@@ -56,6 +55,9 @@ dependencies {
     annotationProcessor('org.mapstruct:mapstruct-processor:1.2.0.Final')
     annotationProcessor('org.projectlombok:lombok')
 
+    dockerJava 'com.github.docker-java:docker-java:3.1.0-rc-2'
+    dockerJava 'cglib:cglib:3.2.0'
+
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
@@ -77,7 +79,7 @@ task copyJar(type: Copy, dependsOn: bootJar) {
 
 task buildImage(type: DockerBuildImage, dependsOn: [build, dockerfile, copyJar, check]) {
     inputDir dockerfile.destFile.parentFile
-    tag = 'mshatunov/pool-api-customer:latest'
+    tag = "mshatunov/${rootProject.name}:latest"
 }
 
 task pushImage(type: DockerPushImage, dependsOn: buildImage) {
