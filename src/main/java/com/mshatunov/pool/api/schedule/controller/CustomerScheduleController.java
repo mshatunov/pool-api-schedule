@@ -8,22 +8,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+import static com.mshatunov.pool.api.schedule.controller.CustomerScheduleController.CUSTOMER_ID;
+
+@RestController(value = CUSTOMER_ID)
 @RequiredArgsConstructor
-public class ScheduleController {
+public class CustomerScheduleController {
 
     public static final String CUSTOMER_ID = "{customerId}";
     public static final String CUSTOMER_PATH = "customerId";
 
     private final ScheduleService service;
 
-    @GetMapping(value = CUSTOMER_ID)
+    @GetMapping
     public List<CustomerTrainingDTO> getCustomerTrainings(@PathVariable(CUSTOMER_PATH) String customerId,
                                                           @RequestParam boolean showOnlyFutureTrainings) {
         return service.getCustomerTrainings(customerId, showOnlyFutureTrainings);
     }
 
-    @PostMapping(value = CUSTOMER_ID)
+    @PostMapping
     public CustomerTrainingDTO addCustomerTraining(@PathVariable(CUSTOMER_PATH) String customerId,
                                                    @RequestBody NewTrainingRequest trainingRequest) {
         return service.addCustomerTraining(customerId, trainingRequest);

@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
 
-class ScheduleControllerTest extends BaseIntegrationTest {
+class CustomerScheduleControllerTest extends BaseIntegrationTest {
 
     public static final String CUSTOMER = 'customer_1234'
     public static final String TEACHER = 'teacher_1234'
@@ -45,7 +45,7 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     ScheduleRepository repository
 
     @Autowired
-    ScheduleController controller
+    CustomerScheduleController controller
 
     @Autowired
     ObjectMapper mapper

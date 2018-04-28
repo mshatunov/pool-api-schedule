@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ScheduleServiceImpl implements ScheduleService {
+public class CustomerScheduleServiceImpl implements CustomerScheduleService {
 
     private final ScheduleRepository repository;
     private final TrainingConverter converter;
