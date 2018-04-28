@@ -20,20 +20,20 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     public static final String POOL = 'pool_1234'
 
     public static final Training TRAINING_1 = Training.builder()
-    .id('training_1')
-    .customerId(CUSTOMER)
-    .teacherId(TEACHER)
-    .poolId(POOL)
-    .start(LocalDateTime.of(2018,4,1,10,30))
-    .duration(Duration.ofMinutes(30))
-    .build()
+            .id('training_1')
+            .customerId(CUSTOMER)
+            .teacherId(TEACHER)
+            .poolId(POOL)
+            .start(LocalDateTime.of(2018, 4, 1, 10, 30))
+            .duration(Duration.ofMinutes(30))
+            .build()
 
     public static final Training TRAINING_2 = Training.builder()
             .id('training_2')
             .customerId(CUSTOMER)
             .teacherId(TEACHER)
             .poolId(POOL)
-            .start(LocalDateTime.of(2018,4,8,10,30))
+            .start(LocalDateTime.of(2020, 4, 8, 10, 30))
             .duration(Duration.ofMinutes(30))
             .build()
 
@@ -53,7 +53,7 @@ class ScheduleControllerTest extends BaseIntegrationTest {
 
     @Test
     void 'successfully get empty customer trainings'() {
-        def response = controller.getCustomerClasses(CUSTOMER)
+        def response = controller.getCustomerClasses(CUSTOMER, false)
         assertEquals(Collections.emptyList(), response)
     }
 
@@ -61,8 +61,17 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     void 'successfully get all customer trainings'() {
         repository.insert(TRAINING_1)
         repository.insert(TRAINING_2)
-        def response = controller.getCustomerClasses(CUSTOMER)
+        def response = controller.getCustomerClasses(CUSTOMER, false)
         assertEquals(2, response.size())
+    }
+
+    @Test
+    void 'successfully get only future customer trainings'() {
+        repository.insert(TRAINING_1)
+        repository.insert(TRAINING_2)
+        def response = controller.getCustomerClasses(CUSTOMER, true)
+        assertEquals(1, response.size())
+        assertEquals('training_2', response.get(0).getId())
     }
 
 }
