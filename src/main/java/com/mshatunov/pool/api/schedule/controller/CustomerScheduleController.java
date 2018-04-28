@@ -2,7 +2,7 @@ package com.mshatunov.pool.api.schedule.controller;
 
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest;
-import com.mshatunov.pool.api.schedule.service.ScheduleService;
+import com.mshatunov.pool.api.schedule.service.CustomerScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +17,10 @@ public class CustomerScheduleController {
     public static final String CUSTOMER_ID = "{customerId}";
     public static final String CUSTOMER_PATH = "customerId";
 
-    private final ScheduleService service;
+    public static final String TRAINING_ID = "/{trainingId}";
+    public static final String TRAINING_PATH = "trainingId";
+
+    private final CustomerScheduleService service;
 
     @GetMapping
     public List<CustomerTrainingDTO> getCustomerTrainings(@PathVariable(CUSTOMER_PATH) String customerId,
@@ -29,5 +32,11 @@ public class CustomerScheduleController {
     public CustomerTrainingDTO addCustomerTraining(@PathVariable(CUSTOMER_PATH) String customerId,
                                                    @RequestBody NewTrainingRequest trainingRequest) {
         return service.addCustomerTraining(customerId, trainingRequest);
+    }
+
+    @DeleteMapping(TRAINING_ID)
+    public void deleteCustomerTraining(@PathVariable(CUSTOMER_PATH) String customerId,
+                                       @PathVariable(TRAINING_PATH) String trainingId) {
+        service.deleteCustomerTraining(customerId, trainingId);
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mshatunov.pool.api.schedule.BaseIntegrationTest
 import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest
+import com.mshatunov.pool.api.schedule.exception.TrainingNotBelongToCustomerException
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository
 import com.mshatunov.pool.api.schedule.repository.model.Training
 import org.junit.jupiter.api.AfterEach
@@ -13,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.time.LocalDateTime
 
-import static org.junit.Assert.assertEquals
-import static org.junit.Assert.assertNotNull
-import static org.junit.Assert.assertTrue
+import static org.junit.jupiter.api.Assertions.*
 
 class CustomerScheduleControllerTest extends BaseIntegrationTest {
 
@@ -100,6 +99,20 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
         def mongoTraining = repository.findById(newTraining.getId())
         assertTrue(mongoTraining.isPresent())
         assertEquals(CUSTOMER, mongoTraining.get().getCustomerId())
+    }
+
+    @Test
+    void 'successfully delete customer training'() {
+        repository.insert(TRAINING_1)
+        controller.deleteCustomerTraining(CUSTOMER, 'training_1')
+        assertTrue(!repository.findById('training_1').isPresent())
+    }
+
+    @Test
+    void 'unable to delete another customer\'s training'() {
+        repository.insert(TRAINING_1)
+        def action = { -> controller.deleteCustomerTraining('another_customer', 'training_1') }
+        assertThrows(TrainingNotBelongToCustomerException.class, action)
     }
 
 }

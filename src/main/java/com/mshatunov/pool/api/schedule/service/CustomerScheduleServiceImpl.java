@@ -3,6 +3,7 @@ package com.mshatunov.pool.api.schedule.service;
 import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties;
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest;
+import com.mshatunov.pool.api.schedule.exception.TrainingNotBelongToCustomerException;
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository;
 import com.mshatunov.pool.api.schedule.repository.model.Training;
 import com.mshatunov.pool.api.schedule.service.converter.TrainingConverter;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,5 +43,15 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
                 .duration(Duration.ofMinutes(properties.getDuration()))
                 .build();
         return converter.trainingToCustomerTrainingsDTO(repository.insert(training));
+    }
+
+    @Override
+    public void deleteCustomerTraining(String customerId, String trainingId) {
+        Optional<Training> training = repository.findById(trainingId);
+        if (training.isPresent() && customerId.equals(training.get().getCustomerId())) {
+            repository.deleteById(trainingId);
+        } else {
+            throw new TrainingNotBelongToCustomerException(customerId, trainingId);
+        }
     }
 }

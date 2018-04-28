@@ -8,4 +8,5 @@ import java.util.List;
 public interface CustomerScheduleService {
     List<CustomerTrainingDTO> getCustomerTrainings(String customerId, boolean showOnlyFutureTrainings);
     CustomerTrainingDTO addCustomerTraining(String customerId, NewTrainingRequest trainingRequest);
+    void deleteCustomerTraining(String customerId, String trainingId);
 }
