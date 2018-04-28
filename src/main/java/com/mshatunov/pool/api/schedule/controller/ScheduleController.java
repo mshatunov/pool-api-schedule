@@ -1,9 +1,10 @@
 package com.mshatunov.pool.api.schedule.controller;
 
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
+import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest;
 import com.mshatunov.pool.api.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
-rename import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,5 +21,11 @@ public class ScheduleController {
     public List<CustomerTrainingDTO> getCustomerTrainings(@PathVariable(CUSTOMER_PATH) String customerId,
                                                           @RequestParam boolean showOnlyFutureTrainings) {
         return service.getCustomerTrainings(customerId, showOnlyFutureTrainings);
+    }
+
+    @PostMapping(value = CUSTOMER_ID)
+    public CustomerTrainingDTO addCustomerTraining(@PathVariable(CUSTOMER_PATH) String customerId,
+                                                   @RequestBody NewTrainingRequest trainingRequest) {
+        return service.addCustomerTraining(customerId, trainingRequest);
     }
 }

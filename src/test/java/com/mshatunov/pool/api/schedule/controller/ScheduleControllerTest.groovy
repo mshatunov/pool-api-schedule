@@ -2,6 +2,8 @@ package com.mshatunov.pool.api.schedule.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mshatunov.pool.api.schedule.BaseIntegrationTest
+import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties
+import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository
 import com.mshatunov.pool.api.schedule.repository.model.Training
 import org.junit.jupiter.api.AfterEach
@@ -12,6 +14,8 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertNotNull
+import static org.junit.Assert.assertTrue
 
 class ScheduleControllerTest extends BaseIntegrationTest {
 
@@ -46,6 +50,9 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     @Autowired
     ObjectMapper mapper
 
+    @Autowired
+    ScheduleApplicationProperties properties
+
     @AfterEach
     void 'clear database'() {
         repository.deleteAll()
@@ -72,6 +79,27 @@ class ScheduleControllerTest extends BaseIntegrationTest {
         def response = controller.getCustomerTrainings(CUSTOMER, true)
         assertEquals(1, response.size())
         assertEquals('training_2', response.get(0).getId())
+    }
+
+    @Test
+    void 'successfully add new training for customer'() {
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .start(LocalDateTime.of(2018, 4, 1, 10, 30))
+                .build()
+        def newTraining = controller.addCustomerTraining(CUSTOMER, request)
+
+        assertNotNull(newTraining)
+
+        assertEquals(TEACHER, newTraining.getTeacherId())
+        assertEquals(POOL, newTraining.getPoolId())
+        assertEquals(LocalDateTime.of(2018, 4, 1, 10, 30), newTraining.getStart())
+        assertEquals(Duration.ofMinutes(properties.getDuration()), newTraining.getDuration())
+
+        def mongoTraining = repository.findById(newTraining.getId())
+        assertTrue(mongoTraining.isPresent())
+        assertEquals(CUSTOMER, mongoTraining.get().getCustomerId())
     }
 
 }
