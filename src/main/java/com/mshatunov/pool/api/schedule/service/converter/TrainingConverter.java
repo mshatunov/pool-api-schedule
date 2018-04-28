@@ -4,7 +4,7 @@ import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.repository.model.Training;
 import org.mapstruct.Mapper;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface TrainingConverter {
     CustomerTrainingDTO trainingToCustomerTrainingsDTO(Training training);
 }
