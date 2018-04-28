@@ -53,7 +53,7 @@ class ScheduleControllerTest extends BaseIntegrationTest {
 
     @Test
     void 'successfully get empty customer trainings'() {
-        def response = controller.getCustomerClasses(CUSTOMER, false)
+        def response = controller.getCustomerTrainings(CUSTOMER, false)
         assertEquals(Collections.emptyList(), response)
     }
 
@@ -61,7 +61,7 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     void 'successfully get all customer trainings'() {
         repository.insert(TRAINING_1)
         repository.insert(TRAINING_2)
-        def response = controller.getCustomerClasses(CUSTOMER, false)
+        def response = controller.getCustomerTrainings(CUSTOMER, false)
         assertEquals(2, response.size())
     }
 
@@ -69,7 +69,7 @@ class ScheduleControllerTest extends BaseIntegrationTest {
     void 'successfully get only future customer trainings'() {
         repository.insert(TRAINING_1)
         repository.insert(TRAINING_2)
-        def response = controller.getCustomerClasses(CUSTOMER, true)
+        def response = controller.getCustomerTrainings(CUSTOMER, true)
         assertEquals(1, response.size())
         assertEquals('training_2', response.get(0).getId())
     }

@@ -3,10 +3,7 @@ package com.mshatunov.pool.api.schedule.controller;
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+rename import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,8 +17,8 @@ public class ScheduleController {
     private final ScheduleService service;
 
     @GetMapping(value = CUSTOMER_ID)
-    public List<CustomerTrainingDTO> getCustomerClasses(@PathVariable(CUSTOMER_PATH) String customerId,
-                                                        @RequestParam boolean showOnlyFutureTrainings) {
-        return service.getCustomerClasses(customerId, showOnlyFutureTrainings);
+    public List<CustomerTrainingDTO> getCustomerTrainings(@PathVariable(CUSTOMER_PATH) String customerId,
+                                                          @RequestParam boolean showOnlyFutureTrainings) {
+        return service.getCustomerTrainings(customerId, showOnlyFutureTrainings);
     }
 }

@@ -18,7 +18,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final TrainingConverter converter;
 
     @Override
-    public List<CustomerTrainingDTO> getCustomerClasses(String customerId, boolean showOnlyFutureTrainings) {
+    public List<CustomerTrainingDTO> getCustomerTrainings(String customerId, boolean showOnlyFutureTrainings) {
         LocalDateTime now = LocalDateTime.now();
         return repository.findByCustomerId(customerId).stream()
                 .filter(tr -> !showOnlyFutureTrainings || tr.getStart().plus(tr.getDuration()).isAfter(now))
