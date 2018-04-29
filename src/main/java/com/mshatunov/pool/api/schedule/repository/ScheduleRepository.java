@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface ScheduleRepository extends MongoRepository<Training, String> {
     List<Training> findByCustomerId(String customerId);
+    List<Training> findByPoolId(String poolId);
     List<Training> findByPoolIdAndTubIdAndStartBetween(String poolId, String tubId, LocalDateTime time1, LocalDateTime time2);
 }

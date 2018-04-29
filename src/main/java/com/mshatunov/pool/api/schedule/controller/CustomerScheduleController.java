@@ -10,11 +10,12 @@ import java.util.List;
 
 import static com.mshatunov.pool.api.schedule.controller.CustomerScheduleController.CUSTOMER_ID;
 
-@RestController(value = CUSTOMER_ID)
+@RestController
+@RequestMapping(CUSTOMER_ID)
 @RequiredArgsConstructor
 public class CustomerScheduleController {
 
-    public static final String CUSTOMER_ID = "{customerId}";
+    public static final String CUSTOMER_ID = "customer/{customerId}";
     public static final String CUSTOMER_PATH = "customerId";
 
     public static final String TRAINING_ID = "/{trainingId}";
