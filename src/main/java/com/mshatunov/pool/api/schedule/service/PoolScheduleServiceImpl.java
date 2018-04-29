@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ public class PoolScheduleServiceImpl implements PoolScheduleService {
         LocalDateTime now = LocalDateTime.now();
         return trainingsStream
                 .filter(tr -> !showOnlyFutureTrainings || tr.getEnd().isAfter(now))
+                .sorted(Comparator.comparing(Training::getStart))
                 .map(converter::trainingToCustomerTrainingsDTO)
                 .collect(Collectors.toList());
     }

@@ -12,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,13 +29,13 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
         LocalDateTime now = LocalDateTime.now();
         return repository.findByCustomerId(customerId).stream()
                 .filter(tr -> !showOnlyFutureTrainings || tr.getEnd().isAfter(now))
+                .sorted(Comparator.comparing(Training::getStart))
                 .map(converter::trainingToCustomerTrainingsDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public CustomerTrainingDTO addCustomerTraining(String customerId, NewTrainingRequest request) {
-
         if (timeIsUnavailable(request.getPoolId(), request.getTubId(), request.getStart())) {
             throw new TimeAlreadyOccupiedException(request.getPoolId(), request.getTubId(), request.getStart());
         }
@@ -48,12 +48,10 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
 
     @Override
     public void deleteCustomerTraining(String customerId, String trainingId) {
-        Optional<Training> training = repository.findById(trainingId);
-        if (training.isPresent() && customerId.equals(training.get().getCustomerId())) {
-            repository.deleteById(trainingId);
-        } else {
-            throw new TrainingNotBelongToCustomerException(customerId, trainingId);
-        }
+        repository.findById(trainingId)
+                .filter(tr -> customerId.equals(tr.getCustomerId()))
+                .orElseThrow(() -> new TrainingNotBelongToCustomerException(customerId, trainingId));
+        repository.deleteById(trainingId);
     }
 
     private boolean timeIsUnavailable(String poolId, String tubId, LocalDateTime startTime) {
