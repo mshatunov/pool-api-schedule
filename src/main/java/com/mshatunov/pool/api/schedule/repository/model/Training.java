@@ -31,5 +31,5 @@ public class Training {
     private String tubId;
     @Indexed
     private LocalDateTime start;
-    private Duration duration;
+    private LocalDateTime end;
 }

@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,5 +17,5 @@ public class CustomerTrainingDTO {
     private String poolId;
     private String tubId;
     private LocalDateTime start;
-    private Duration duration;
+    private LocalDateTime end;
 }

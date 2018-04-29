@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mshatunov.pool.api.schedule.BaseIntegrationTest
 import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest
+import com.mshatunov.pool.api.schedule.exception.TimeAlreadyOccupiedException
 import com.mshatunov.pool.api.schedule.exception.TrainingNotBelongToCustomerException
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository
 import com.mshatunov.pool.api.schedule.repository.model.Training
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.StringUtils
 
-import java.time.Duration
 import java.time.LocalDateTime
 
 import static org.junit.jupiter.api.Assertions.*
@@ -22,6 +23,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     public static final String TEACHER = 'teacher_1234'
     public static final String POOL = 'pool_1234'
     public static final String TUB = '1234_left'
+    public static final LocalDateTime TIME_1 = LocalDateTime.of(2018, 4, 1, 10, 30)
+    public static final LocalDateTime TIME_2 = LocalDateTime.of(2020, 4, 1, 10, 30)
 
     public static final Training TRAINING_1 = Training.builder()
             .id('training_1')
@@ -29,8 +32,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
             .teacherId(TEACHER)
             .poolId(POOL)
             .tubId(TUB)
-            .start(LocalDateTime.of(2018, 4, 1, 10, 30))
-            .duration(Duration.ofMinutes(30))
+            .start(TIME_1)
+            .end(TIME_1.plusMinutes(30))
             .build()
 
     public static final Training TRAINING_2 = Training.builder()
@@ -39,8 +42,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
             .teacherId(TEACHER)
             .poolId(POOL)
             .tubId(TUB)
-            .start(LocalDateTime.of(2020, 4, 8, 10, 30))
-            .duration(Duration.ofMinutes(30))
+            .start(TIME_1)
+            .end(TIME_2.plusMinutes(30))
             .build()
 
     @Autowired
@@ -89,7 +92,7 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
                 .teacherId(TEACHER)
                 .poolId(POOL)
                 .tubId(TUB)
-                .start(LocalDateTime.of(2018, 4, 1, 10, 30))
+                .start(TIME_1)
                 .build()
         def newTraining = controller.addCustomerTraining(CUSTOMER, request)
 
@@ -98,12 +101,99 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
         assertEquals(TEACHER, newTraining.getTeacherId())
         assertEquals(POOL, newTraining.getPoolId())
         assertEquals(TUB, newTraining.getTubId())
-        assertEquals(LocalDateTime.of(2018, 4, 1, 10, 30), newTraining.getStart())
-        assertEquals(Duration.ofMinutes(properties.getDuration()), newTraining.getDuration())
+        assertEquals(TIME_1, newTraining.getStart())
+        assertEquals(TIME_1.plusMinutes(properties.getDuration()), newTraining.getEnd())
 
         def mongoTraining = repository.findById(newTraining.getId())
         assertTrue(mongoTraining.isPresent())
         assertEquals(CUSTOMER, mongoTraining.get().getCustomerId())
+    }
+
+    @Test
+    void 'should throw exception if time is already occupied before'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB)
+                .build()
+
+        request.setStart(TIME_1.minusMinutes(10))
+        def action = { -> controller.addCustomerTraining(CUSTOMER, request) }
+        assertThrows(TimeAlreadyOccupiedException.class, action)
+
+        request.setStart(TIME_1)
+        assertThrows(TimeAlreadyOccupiedException.class, action)
+
+        request.setStart(TIME_1.plusMinutes(10))
+        assertThrows(TimeAlreadyOccupiedException.class, action)
+    }
+
+    @Test
+    void 'should throw exception if time is already occupied same'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB)
+                .build()
+
+        request.setStart(TIME_1)
+        def action = { -> controller.addCustomerTraining(CUSTOMER, request) }
+        assertThrows(TimeAlreadyOccupiedException.class, action)
+    }
+
+    @Test
+    void 'should throw exception if time is already occupied after'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB)
+                .build()
+
+        request.setStart(TIME_1.plusMinutes(10))
+        def action = { -> controller.addCustomerTraining(CUSTOMER, request) }
+        assertThrows(TimeAlreadyOccupiedException.class, action)
+    }
+
+    @Test
+    void 'should not throw exception if time is already occupied in another tub before'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB + "another")
+                .build()
+
+        request.setStart(TIME_1.minusMinutes(10))
+        assertFalse(StringUtils.isEmpty(controller.addCustomerTraining(CUSTOMER, request).getId()))
+    }
+
+    @Test
+    void 'should not throw exception if time is already occupied in another tub same'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB + "another")
+                .build()
+
+        request.setStart(TIME_1)
+        assertFalse(StringUtils.isEmpty(controller.addCustomerTraining(CUSTOMER, request).getId()))
+    }
+
+    @Test
+    void 'should not throw exception if time is already occupied in another tub after'() {
+        repository.insert(TRAINING_1)
+        NewTrainingRequest request = NewTrainingRequest.builder()
+                .teacherId(TEACHER)
+                .poolId(POOL)
+                .tubId(TUB + "another")
+                .build()
+
+        request.setStart(TIME_1.plusMinutes(10))
+        assertFalse(StringUtils.isEmpty(controller.addCustomerTraining(CUSTOMER, request).getId()))
     }
 
     @Test

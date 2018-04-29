@@ -3,6 +3,7 @@ package com.mshatunov.pool.api.schedule.service;
 import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties;
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest;
+import com.mshatunov.pool.api.schedule.exception.TimeAlreadyOccupiedException;
 import com.mshatunov.pool.api.schedule.exception.TrainingNotBelongToCustomerException;
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository;
 import com.mshatunov.pool.api.schedule.repository.model.Training;
@@ -10,7 +11,6 @@ import com.mshatunov.pool.api.schedule.service.converter.TrainingConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -28,16 +28,21 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
     public List<CustomerTrainingDTO> getCustomerTrainings(String customerId, boolean showOnlyFutureTrainings) {
         LocalDateTime now = LocalDateTime.now();
         return repository.findByCustomerId(customerId).stream()
-                .filter(tr -> !showOnlyFutureTrainings || tr.getStart().plus(tr.getDuration()).isAfter(now))
+                .filter(tr -> !showOnlyFutureTrainings || tr.getEnd().isAfter(now))
                 .map(converter::trainingToCustomerTrainingsDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public CustomerTrainingDTO addCustomerTraining(String customerId, NewTrainingRequest request) {
+
+        if (timeIsUnavailable(request.getPoolId(), request.getTubId(), request.getStart())) {
+            throw new TimeAlreadyOccupiedException(request.getPoolId(), request.getTubId(), request.getStart());
+        }
+
         Training training = converter.newTrainingRequesttoTraining(request)
                 .setCustomerId(customerId)
-                .setDuration(Duration.ofMinutes(properties.getDuration()));
+                .setEnd(request.getStart().plusMinutes(properties.getDuration()));
         return converter.trainingToCustomerTrainingsDTO(repository.insert(training));
     }
 
@@ -49,5 +54,15 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
         } else {
             throw new TrainingNotBelongToCustomerException(customerId, trainingId);
         }
+    }
+
+    private boolean timeIsUnavailable(String poolId, String tubId, LocalDateTime startTime) {
+        LocalDateTime endTime = startTime.plusMinutes(properties.getDuration());
+        return repository.findByPoolIdAndTubIdAndStartBetween(poolId, tubId,
+                startTime.minusMinutes(properties.getDuration()), endTime)
+                .stream()
+                .anyMatch(tr -> tr.getStart().isEqual(startTime) ||
+                        tr.getStart().isBefore(startTime) && tr.getEnd().isAfter(startTime) ||
+                        tr.getStart().isBefore(endTime) && tr.getEnd().isAfter(endTime));
     }
 }
