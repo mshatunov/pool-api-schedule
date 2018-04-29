@@ -42,7 +42,7 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
             .teacherId(TEACHER)
             .poolId(POOL)
             .tubId(TUB)
-            .start(TIME_1)
+            .start(TIME_2)
             .end(TIME_2.plusMinutes(30))
             .build()
 
@@ -51,9 +51,6 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
 
     @Autowired
     CustomerScheduleController controller
-
-    @Autowired
-    ObjectMapper mapper
 
     @Autowired
     ScheduleApplicationProperties properties

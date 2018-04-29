@@ -17,11 +17,21 @@ public class PoolScheduleController {
     public static final String POOL_ID = "pool/{poolId}";
     public static final String POOL_PATH = "poolId";
 
+    public static final String TUB_ID = "/{tubId}";
+    public static final String TUB_PATH = "tubId";
+
     private final PoolScheduleService service;
 
     @GetMapping
     public List<CustomerTrainingDTO> getPoolTrainings(@PathVariable(POOL_PATH) String poolId,
                                                       @RequestParam boolean showOnlyFutureTrainings) {
         return service.getPoolTrainings(poolId, showOnlyFutureTrainings);
+    }
+
+    @GetMapping(TUB_ID)
+    public List<CustomerTrainingDTO> getTubTrainings(@PathVariable(POOL_PATH) String poolId,
+                                                      @PathVariable(TUB_PATH) String tubId,
+                                                      @RequestParam boolean showOnlyFutureTrainings) {
+        return service.getTubTrainings(poolId, tubId, showOnlyFutureTrainings);
     }
 }

@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface PoolScheduleService {
     List<CustomerTrainingDTO> getPoolTrainings(String poolId, boolean showOnlyFutureTrainings);
+    List<CustomerTrainingDTO> getTubTrainings(String poolId, String tubId, boolean showOnlyFutureTrainings);
 }

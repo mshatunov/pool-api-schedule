@@ -93,4 +93,14 @@ class PoolScheduleControllerTest extends BaseIntegrationTest {
         assertEquals('training_2', response.get(0).getId())
     }
 
+    @Test
+    void 'successfully get all pod trainings'() {
+        repository.insert(TRAINING_1)
+        repository.insert(TRAINING_2)
+        repository.insert(TRAINING_3)
+        def response = controller.getTubTrainings(POOL_1, TUB_1, false)
+        assertEquals(1, response.size())
+        assertEquals('training_1', response.get(0).getId())
+    }
+
 }
