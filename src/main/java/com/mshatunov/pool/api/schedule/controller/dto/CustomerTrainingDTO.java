@@ -16,6 +16,7 @@ public class CustomerTrainingDTO {
     private String id;
     private String teacherId;
     private String poolId;
+    private String tubId;
     private LocalDateTime start;
     private Duration duration;
 }

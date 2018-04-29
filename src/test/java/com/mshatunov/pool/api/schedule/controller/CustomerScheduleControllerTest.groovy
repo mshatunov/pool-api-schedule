@@ -21,12 +21,14 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     public static final String CUSTOMER = 'customer_1234'
     public static final String TEACHER = 'teacher_1234'
     public static final String POOL = 'pool_1234'
+    public static final String TUB = '1234_left'
 
     public static final Training TRAINING_1 = Training.builder()
             .id('training_1')
             .customerId(CUSTOMER)
             .teacherId(TEACHER)
             .poolId(POOL)
+            .tubId(TUB)
             .start(LocalDateTime.of(2018, 4, 1, 10, 30))
             .duration(Duration.ofMinutes(30))
             .build()
@@ -36,6 +38,7 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
             .customerId(CUSTOMER)
             .teacherId(TEACHER)
             .poolId(POOL)
+            .tubId(TUB)
             .start(LocalDateTime.of(2020, 4, 8, 10, 30))
             .duration(Duration.ofMinutes(30))
             .build()
@@ -85,6 +88,7 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
         NewTrainingRequest request = NewTrainingRequest.builder()
                 .teacherId(TEACHER)
                 .poolId(POOL)
+                .tubId(TUB)
                 .start(LocalDateTime.of(2018, 4, 1, 10, 30))
                 .build()
         def newTraining = controller.addCustomerTraining(CUSTOMER, request)
@@ -93,6 +97,7 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
 
         assertEquals(TEACHER, newTraining.getTeacherId())
         assertEquals(POOL, newTraining.getPoolId())
+        assertEquals(TUB, newTraining.getTubId())
         assertEquals(LocalDateTime.of(2018, 4, 1, 10, 30), newTraining.getStart())
         assertEquals(Duration.ofMinutes(properties.getDuration()), newTraining.getDuration())
 

@@ -14,5 +14,6 @@ import java.time.LocalDateTime;
 public class NewTrainingRequest {
     private String teacherId;
     private String poolId;
+    private String tubId;
     private LocalDateTime start;
 }

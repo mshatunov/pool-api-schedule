@@ -35,13 +35,9 @@ public class CustomerScheduleServiceImpl implements CustomerScheduleService {
 
     @Override
     public CustomerTrainingDTO addCustomerTraining(String customerId, NewTrainingRequest request) {
-        Training training = Training.builder()
-                .customerId(customerId)
-                .poolId(request.getPoolId())
-                .teacherId(request.getTeacherId())
-                .start(request.getStart())
-                .duration(Duration.ofMinutes(properties.getDuration()))
-                .build();
+        Training training = converter.newTrainingRequesttoTraining(request)
+                .setCustomerId(customerId)
+                .setDuration(Duration.ofMinutes(properties.getDuration()));
         return converter.trainingToCustomerTrainingsDTO(repository.insert(training));
     }
 

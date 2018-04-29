@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true)
 @Document(collection = "schedule")
 public class Training {
     @Id
@@ -25,6 +27,8 @@ public class Training {
     private String teacherId;
     @Indexed
     private String poolId;
+    @Indexed
+    private String tubId;
     @Indexed
     private LocalDateTime start;
     private Duration duration;
