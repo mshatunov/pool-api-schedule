@@ -6,3 +6,6 @@ spring:
 common:
   params:
     duration: 30
+    time-open: "10:00"
+    time-close: "21:00"
+    default-depth: 30

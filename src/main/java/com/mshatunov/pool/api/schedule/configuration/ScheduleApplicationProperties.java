@@ -12,4 +12,10 @@ import javax.validation.constraints.NotNull;
 public class ScheduleApplicationProperties {
     @NotNull
     private Integer duration;
+    @NotNull
+    private String timeOpen;
+    @NotNull
+    private String timeClose;
+    @NotNull
+    private Integer defaultDepth;
 }
