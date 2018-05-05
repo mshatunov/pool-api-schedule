@@ -1,64 +1,19 @@
 package com.mshatunov.pool.api.schedule.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.mshatunov.pool.api.schedule.BaseIntegrationTest
-import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties
 import com.mshatunov.pool.api.schedule.controller.dto.NewTrainingRequest
 import com.mshatunov.pool.api.schedule.exception.TimeAlreadyOccupiedException
 import com.mshatunov.pool.api.schedule.exception.TrainingNotBelongToCustomerException
-import com.mshatunov.pool.api.schedule.repository.ScheduleRepository
-import com.mshatunov.pool.api.schedule.repository.model.Training
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.StringUtils
-
-import java.time.LocalDateTime
 
 import static org.junit.jupiter.api.Assertions.*
 
 class CustomerScheduleControllerTest extends BaseIntegrationTest {
 
-    public static final String CUSTOMER = 'customer_1234'
-    public static final String TEACHER = 'teacher_1234'
-    public static final String POOL = 'pool_1234'
-    public static final String TUB = '1234_left'
-    public static final LocalDateTime TIME_1 = LocalDateTime.of(2018, 4, 1, 10, 30)
-    public static final LocalDateTime TIME_2 = LocalDateTime.of(2020, 4, 1, 10, 30)
-
-    public static final Training TRAINING_1 = Training.builder()
-            .id('training_1')
-            .customerId(CUSTOMER)
-            .teacherId(TEACHER)
-            .poolId(POOL)
-            .tubId(TUB)
-            .start(TIME_1)
-            .end(TIME_1.plusMinutes(30))
-            .build()
-
-    public static final Training TRAINING_2 = Training.builder()
-            .id('training_2')
-            .customerId(CUSTOMER)
-            .teacherId(TEACHER)
-            .poolId(POOL)
-            .tubId(TUB)
-            .start(TIME_2)
-            .end(TIME_2.plusMinutes(30))
-            .build()
-
-    @Autowired
-    ScheduleRepository repository
-
     @Autowired
     CustomerScheduleController controller
-
-    @Autowired
-    ScheduleApplicationProperties properties
-
-    @AfterEach
-    void 'clear database'() {
-        repository.deleteAll()
-    }
 
     @Test
     void 'successfully get empty customer trainings'() {
@@ -86,18 +41,16 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     @Test
     void 'successfully add new training for customer'() {
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB)
+                .poolId(POOL_1)
+                .tubId(TUB_1)
                 .start(TIME_1)
                 .build()
         def newTraining = controller.addCustomerTraining(CUSTOMER, request)
 
         assertNotNull(newTraining)
 
-        assertEquals(TEACHER, newTraining.getTeacherId())
-        assertEquals(POOL, newTraining.getPoolId())
-        assertEquals(TUB, newTraining.getTubId())
+        assertEquals(POOL_1, newTraining.getPoolId())
+        assertEquals(TUB_1, newTraining.getTubId())
         assertEquals(TIME_1, newTraining.getStart())
         assertEquals(TIME_1.plusMinutes(properties.getDuration()), newTraining.getEnd())
 
@@ -110,9 +63,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should throw exception if time is already occupied before'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB)
+                .poolId(POOL_1)
+                .tubId(TUB_1)
                 .build()
 
         request.setStart(TIME_1.minusMinutes(10))
@@ -130,9 +82,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should throw exception if time is already occupied same'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB)
+                .poolId(POOL_1)
+                .tubId(TUB_1)
                 .build()
 
         request.setStart(TIME_1)
@@ -144,9 +95,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should throw exception if time is already occupied after'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB)
+                .poolId(POOL_1)
+                .tubId(TUB_1)
                 .build()
 
         request.setStart(TIME_1.plusMinutes(10))
@@ -158,9 +108,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should not throw exception if time is already occupied in another tub before'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB + "another")
+                .poolId(POOL_1)
+                .tubId(TUB_1 + "another")
                 .build()
 
         request.setStart(TIME_1.minusMinutes(10))
@@ -171,9 +120,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should not throw exception if time is already occupied in another tub same'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB + "another")
+                .poolId(POOL_1)
+                .tubId(TUB_1 + "another")
                 .build()
 
         request.setStart(TIME_1)
@@ -184,9 +132,8 @@ class CustomerScheduleControllerTest extends BaseIntegrationTest {
     void 'should not throw exception if time is already occupied in another tub after'() {
         repository.insert(TRAINING_1)
         NewTrainingRequest request = NewTrainingRequest.builder()
-                .teacherId(TEACHER)
-                .poolId(POOL)
-                .tubId(TUB + "another")
+                .poolId(POOL_1)
+                .tubId(TUB_1 + "another")
                 .build()
 
         request.setStart(TIME_1.plusMinutes(10))
