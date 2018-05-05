@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewTrainingRequest {
-    private String teacherId;
     private String poolId;
     private String tubId;
     private LocalDateTime start;

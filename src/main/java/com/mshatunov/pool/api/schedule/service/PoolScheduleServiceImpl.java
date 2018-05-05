@@ -1,5 +1,6 @@
 package com.mshatunov.pool.api.schedule.service;
 
+import com.mshatunov.pool.api.schedule.clent.InstructorClient;
 import com.mshatunov.pool.api.schedule.configuration.ScheduleApplicationProperties;
 import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository;
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 public class PoolScheduleServiceImpl implements PoolScheduleService {
 
     private final ScheduleRepository repository;
+    private final InstructorClient instructorClient;
     private final TrainingConverter converter;
     private final ScheduleApplicationProperties properties;
 
@@ -74,7 +76,8 @@ public class PoolScheduleServiceImpl implements PoolScheduleService {
         return trainingsStream
                 .filter(tr -> !showOnlyFutureTrainings || tr.getEnd().isAfter(now))
                 .sorted(Comparator.comparing(Training::getStart))
-                .map(converter::trainingToCustomerTrainingsDTO)
+                .map(tr -> converter.trainingToCustomerTrainingsDTO(tr,
+                        instructorClient.getInstructorByPoolAndDate(tr.getPoolId(), tr.getTubId(), tr.getStart().toLocalDate().toString())))
                 .collect(Collectors.toList());
     }
 }

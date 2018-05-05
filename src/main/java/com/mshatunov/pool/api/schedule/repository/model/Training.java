@@ -23,8 +23,6 @@ public class Training {
     @Indexed
     private String customerId;
     @Indexed
-    private String teacherId;
-    @Indexed
     private String poolId;
     @Indexed
     private String tubId;

@@ -39,6 +39,12 @@ class PoolScheduleControllerTest extends BaseIntegrationTest {
         def response = controller.getPoolTrainings(POOL_1, true)
         assertEquals(1, response.size())
         assertEquals('training_2', response.get(0).getId())
+        assertEquals(TUB_2, response.get(0).getTubId())
+        assertEquals(TIME_2, response.get(0).getStart())
+        assertEquals(TIME_2.plusMinutes(properties.getDuration()), response.get(0).getEnd())
+        assertEquals(INSTRUCTOR_ID, response.get(0).getInstructor().getId())
+        assertEquals(INSTRUCTOR_NAME, response.get(0).getInstructor().getName())
+        assertEquals(INSTRUCTOR_LAST_NAME, response.get(0).getInstructor().getLastName())
     }
 
     @Test

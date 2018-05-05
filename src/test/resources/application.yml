@@ -3,6 +3,10 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/pool
 
+feign:
+  hystrix:
+    enabled: true
+
 common:
   params:
     duration: 30
