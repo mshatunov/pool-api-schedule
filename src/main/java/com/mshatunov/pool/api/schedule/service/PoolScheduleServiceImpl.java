@@ -6,6 +6,7 @@ import com.mshatunov.pool.api.schedule.controller.dto.CustomerTrainingDTO;
 import com.mshatunov.pool.api.schedule.repository.ScheduleRepository;
 import com.mshatunov.pool.api.schedule.repository.model.Training;
 import com.mshatunov.pool.api.schedule.service.converter.TrainingConverter;
+import com.mshatunov.pool.api.schedule.service.utils.ScheduleUtilsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
 public class PoolScheduleServiceImpl implements PoolScheduleService {
 
     private final ScheduleRepository repository;
+    private final ScheduleUtilsService utilsService;
     private final InstructorClient instructorClient;
     private final TrainingConverter converter;
     private final ScheduleApplicationProperties properties;
@@ -40,33 +42,29 @@ public class PoolScheduleServiceImpl implements PoolScheduleService {
     }
 
     @Override
-    public List<CustomerTrainingDTO> getAvailablePoolTrainings(String poolId, String tubId, Integer duration) {
+    public List<CustomerTrainingDTO> getAvailablePoolTrainings(String poolId, String tubId, LocalDate start, LocalDate finish) {
         Map<LocalDateTime, Training> bookedTrainings = repository.findByPoolIdAndTubIdAndStartBetween(
-                poolId, tubId, LocalDateTime.now(), LocalDateTime.now().plusDays(duration)).stream()
+                poolId, tubId, LocalDateTime.of(start, LocalTime.MIN), LocalDateTime.of(finish, LocalTime.MAX)).stream()
                 .collect(Collectors.toMap(Training::getStart, Function.identity()));
 
-        return searchAvailableTrainings(poolId, tubId, duration, bookedTrainings);
+        return searchAvailableTrainings(poolId, tubId, start, finish, bookedTrainings);
     }
 
-    private List<CustomerTrainingDTO> searchAvailableTrainings(String poolId, String tubId, Integer duration, Map<LocalDateTime, Training> bookedTrainings) {
-        LocalDate now = LocalDate.now();
+    private List<CustomerTrainingDTO> searchAvailableTrainings(String poolId, String tubId, LocalDate start, LocalDate finish,
+                                                               Map<LocalDateTime, Training> bookedTrainings) {
         List<CustomerTrainingDTO> availableTrainings = new ArrayList<>();
 
-        for (LocalDate date = now; date.isBefore(now.plusDays(duration)); date = date.plusDays(1)) {
-            for (LocalTime time = date.equals(now) ? LocalTime.now() : LocalTime.parse(properties.getTimeOpen());
-                 time.isBefore(LocalTime.parse(properties.getTimeClose()));
-                 time = time.plusMinutes(properties.getDuration())) {
-
-                LocalDateTime processingTime = LocalDateTime.of(date, time);
-                if (!bookedTrainings.containsKey(processingTime)) {
-                    availableTrainings.add(CustomerTrainingDTO.builder()
+        for (LocalDate date = start; date.isBefore(finish); date = date.plusDays(1)) {
+            LocalDate processingDate = date;
+            utilsService.getOpenTimes(date).stream()
+                    .map(time -> LocalDateTime.of(processingDate, time))
+                    .filter(dt -> !bookedTrainings.containsKey(dt))
+                    .forEach(dt -> availableTrainings.add(CustomerTrainingDTO.builder()
                             .poolId(poolId)
                             .tubId(tubId)
-                            .start(processingTime)
-                            .end(processingTime.plusMinutes(properties.getDuration()))
-                            .build());
-                }
-            }
+                            .start(dt)
+                            .end(dt.plusMinutes(properties.getDuration()))
+                            .build()));
         }
         return availableTrainings;
     }

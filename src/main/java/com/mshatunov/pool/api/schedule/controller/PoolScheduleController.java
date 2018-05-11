@@ -6,6 +6,7 @@ import com.mshatunov.pool.api.schedule.service.PoolScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +43,7 @@ public class PoolScheduleController {
     public List<CustomerTrainingDTO> getAvailableTubTrainings(@PathVariable(POOL_PATH) String poolId,
                                                               @PathVariable(TUB_PATH) String tubId,
                                                               @RequestParam Integer depth) {
-        return service.getAvailablePoolTrainings(poolId, tubId, Optional.ofNullable(depth).orElse(properties.getDefaultDepth()));
+        return service.getAvailablePoolTrainings(poolId, tubId, LocalDate.now(),
+                LocalDate.now().plusDays(Optional.ofNullable(depth).orElse(properties.getDefaultDepth())));
     }
 }
