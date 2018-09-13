@@ -57,7 +57,7 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok')
 
     dockerJava 'com.github.docker-java:docker-java:3.1.0-rc-2'
-    dockerJava 'cglib:cglib:3.2.0'
+    dockerJava 'cglib:cglib:3.2.8'
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.junit.jupiter:junit-jupiter-engine'
