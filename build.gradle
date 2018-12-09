@@ -1,37 +1,37 @@
 buildscript {
     ext {
-        springBootVersion = '2.0.1.RELEASE'
+        springBootVersion = '2.0.7.RELEASE'
     }
     repositories {
         mavenCentral()
-        jcenter()
+        gradlePluginPortal()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath 'com.bmuschko:gradle-docker-plugin:3.2.6'
+        classpath 'com.bmuschko:gradle-docker-plugin:4.1.0'
     }
 }
 plugins {
-    id 'net.ltgt.apt' version '0.15'
+    id 'net.ltgt.apt' version '0.19'
 }
 
 apply plugin: 'java'
 apply plugin: 'net.ltgt.apt-idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.bmuschko.docker-spring-boot-application'
 
 group = 'com.mshatunov.pool.api'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2'
 sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven { url "https://repo.spring.io/milestone" }
+    gradlePluginPortal()
 }
 
 ext {
-    springCloudVersion = 'Finchley.RC1'
+    springCloudVersion = 'Finchley.SR2'
 }
 
 dependencyManagement {
@@ -51,49 +51,29 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
 
     compileOnly 'org.mapstruct:mapstruct-jdk8:1.2.0.Final'
-    compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.16.20'
 
     annotationProcessor('org.mapstruct:mapstruct-processor:1.2.0.Final')
-    annotationProcessor('org.projectlombok:lombok')
-
-    dockerJava 'com.github.docker-java:docker-java:3.1.0-rc-2'
-    dockerJava 'cglib:cglib:3.2.0'
+    annotationProcessor('org.projectlombok:lombok:1.16.20')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.junit.jupiter:junit-jupiter-engine'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.15'
-    testCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.1'
+    testCompile 'org.codehaus.groovy:groovy-all:2.5.4'
+    testCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.1.1'
 }
 
-import com.bmuschko.gradle.docker.DockerRegistryCredentials
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+docker {
+    registryCredentials {
+        username = project.hasProperty('dockerUser') ? dockerUser : System.getenv('dockerUser')
+        password = project.hasProperty('dockerPassword') ? dockerPassword : System.getenv('dockerPassword')
+    }
 
-task dockerfile(type: Dockerfile) {
-    from 'frolvlad/alpine-oraclejdk8:slim'
-    addFile "${bootJar.archiveName}", '.'
-    entryPoint 'java', '-jar', "${bootJar.archiveName}"
+    springBootApplication {
+        baseImage = 'frolvlad/alpine-oraclejdk8:slim'
+        tag = "mshatunov/${rootProject.name}:${version}"
+    }
 }
 
-task copyJar(type: Copy, dependsOn: bootJar) {
-    from bootJar.archivePath
-    into dockerfile.destFile.parentFile
-}
-
-task buildImage(type: DockerBuildImage, dependsOn: [build, dockerfile, copyJar, check]) {
-    inputDir dockerfile.destFile.parentFile
-    tag = "mshatunov/${rootProject.name}:latest"
-}
-
-task pushImage(type: DockerPushImage, dependsOn: buildImage) {
-    imageName = buildImage.tag
-    def dockerRegistryCredentials = new DockerRegistryCredentials()
-    dockerRegistryCredentials.username = project.hasProperty('dockerUser') ? dockerUser : System.getenv('dockerUser')
-    dockerRegistryCredentials.password = project.hasProperty('dockerPassword') ? dockerPassword : System.getenv('dockerPassword')
-    registryCredentials = dockerRegistryCredentials
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+wrapper {
+    gradleVersion = '5.0'
 }
