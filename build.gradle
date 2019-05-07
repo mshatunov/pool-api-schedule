@@ -51,7 +51,7 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
 
     compileOnly 'org.mapstruct:mapstruct-jdk8:1.2.0.Final'
-    compileOnly 'org.projectlombok:lombok:1.16.20'
+    compileOnly 'org.projectlombok:lombok:1.18.8'
 
     annotationProcessor('org.mapstruct:mapstruct-processor:1.2.0.Final')
     annotationProcessor('org.projectlombok:lombok:1.16.20')
